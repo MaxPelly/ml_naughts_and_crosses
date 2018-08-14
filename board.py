@@ -72,9 +72,13 @@ class Board (object):
             current_id = current_id % 2 + 1
 
         if self.won:
+            # the winner must be the player that just went, as the players are swapped before braking the winning
+            # payer will now be in the next player variable
             self.winner = next_player
         self.player_one.results(self.winner, 1)
         self.player_two.results(self.winner, 2)
+
+        return next_player, current_player, self.won  # returned for neural net training
 
     def _check_move_legality(self, pos):
         """
