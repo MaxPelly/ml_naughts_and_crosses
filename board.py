@@ -1,10 +1,14 @@
+from player import BasePlayer
+
+
 class Board (object):
     """
     The board on which the game is played, deals with player management, turn tracking and win condition.
     players should be objects with a play function accepting the current state of the board and return a tuple (x,y)
     of where they want to play
 
-    also handles move validity checking though will not communicate bad moves to the player, they should also check first
+    also handles move validity checking though will not communicate bad moves to the player, just mark and skip
+    they should also check first
     """
 
     def __init__(self, player_one, player_two):
@@ -17,8 +21,8 @@ class Board (object):
         self.state = [[0 for _ in range(3)] for _ in range(3)]
         self.won = False
         self.winner = None
-        self.player_one = player_one
-        self.player_two = player_two
+        self.player_one = player_one  # type: BasePlayer
+        self.player_two = player_two  # type: BasePlayer
         
     def get(self, pos):
         """
@@ -49,16 +53,28 @@ class Board (object):
 
         current_player, next_player = self.player_one, self.player_two
         current_id = 1
-        while not self.won:
+        play_count = 0
+        last_player_played = True
+
+        while not self.won and play_count < 9:
             pos = current_player.play(state=self.state, player_number=current_id)
             if self._check_move_legality(pos):
                 self.set(pos, current_id)
+                play_count += 1
+                last_player_played = True
             else:
-                # todo implement some sort of illegal move penalty
-                pass
+                current_player.moved_illegally = True
+                if not last_player_played:
+                    break
+                last_player_played = False
             self._test_for_win(pos, current_id)
             current_player, next_player = next_player, current_player
             current_id = current_id % 2 + 1
+
+        if self.won:
+            self.winner = next_player
+        self.player_one.results(self.winner, 1)
+        self.player_two.results(self.winner, 2)
 
     def _check_move_legality(self, pos):
         """
@@ -86,19 +102,13 @@ class Board (object):
         :return: None
         """
 
-        # todo implement diagonals
         x, y = pos
         to_check = ((1, 2), (-1, 1), (-1, -2))
         check_x = to_check[x]
         check_y = to_check[y]
         self.won = (player == self.get((x + check_x[0], y)) and player == self.get((x + check_x[1], y))) or \
-                   (player == self.get((x, y + check_y[0])) and player == self.get((x, y + check_y[1])))
-
-
-if __name__ == '__main__':
-    from player import HumanPlayer, NNPlayer
-    player_one, player_two = HumanPlayer(), NNPlayer()
-    board = Board(player_one, player_two)
-    board.play()
-                
-
+                   (player == self.get((x, y + check_y[0])) and player == self.get((x, y + check_y[1]))) or \
+                   (x == y and
+                    player == self.get((0, 0)) and player == self.get((1, 1)) and player == self.get((2, 2))) or \
+                   (x + y == 2 and
+                    player == self.get((0, 2)) and player == self.get((1, 1)) and player == self.get((2, 0)))

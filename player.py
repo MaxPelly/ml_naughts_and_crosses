@@ -5,10 +5,16 @@ import numpy as np
 
 class BasePlayer(object):
     def __init__(self):
-        pass
+        self.moved_illegally = False
         
-    def take_turn(self, state):
+    def play(self, state, player_number):
+        return 0,0
+
+    def results(self, winner, player_id):
         pass
+
+    def reset(self):
+        self.moved_illegally = False
         
         
 class HumanPlayer(BasePlayer):
@@ -31,12 +37,20 @@ class HumanPlayer(BasePlayer):
             else:
                 print(f'"{move}" is not a valid move, please enter two numbers (0 - 2) separated by a coma')
 
+    def results(self, winner, player_id):
+        if winner == self:
+            print(f"Player {player_id} wins!!!!!")
+        elif winner:
+            print(f"Player {player_id} lost")
+        else:
+            print("Tie")
+
     @staticmethod
     def display(state):
         for y in range(3):
             out_str = '|'
             for x in range(3):
-                out_str += '{}|'.format(state[x][y])
+                out_str += f'{state[x][y]}|'
             print(out_str)
         print()
 
@@ -46,7 +60,7 @@ class NNPlayer(BasePlayer):
         super().__init__()
         self.brain = Neural_Net(net_shape)
 
-    def play(self, state, *args, **kwargs):
+    def play(self, state, player_number):
         state = np.array(state)
         tensor = state.reshape((9,1))
         guess_tensor = self.brain.feed_forward(tensor)
