@@ -52,14 +52,13 @@ class Board (object):
         while not self.won:
             pos = current_player.play(state=self.state, player_number=current_id)
             if self._check_move_legality(pos):
+                self.set(pos, current_id)
+            else:
                 # todo implement some sort of illegal move penalty
                 pass
-            else:
-                self.set(pos, current_id)
-            self._test_for_win(pos)
+            self._test_for_win(pos, current_id)
             current_player, next_player = next_player, current_player
             current_id = current_id % 2 + 1
-            print(self.won)
 
     def _check_move_legality(self, pos):
         """
@@ -78,7 +77,7 @@ class Board (object):
             return False
         return True
 
-    def _test_for_win(self, pos):
+    def _test_for_win(self, pos, player):
         """
         Checks for a win following a move at pos (x,y) and sets self.won accordingly
         assumes noone has previously won
@@ -88,7 +87,6 @@ class Board (object):
         """
 
         # todo implement diagonals
-        player = self.get(pos)
         x, y = pos
         to_check = ((1, 2), (-1, 1), (-1, -2))
         check_x = to_check[x]
@@ -97,10 +95,9 @@ class Board (object):
                    (player == self.get((x, y + check_y[0])) and player == self.get((x, y + check_y[1])))
 
 
-# play a game with two human players for debugging purposes
 if __name__ == '__main__':
-    from player import HumanPlayer
-    player_one, player_two = (HumanPlayer() for _ in range(2))
+    from player import HumanPlayer, NNPlayer
+    player_one, player_two = HumanPlayer(), NNPlayer()
     board = Board(player_one, player_two)
     board.play()
                 

@@ -1,4 +1,6 @@
 import re
+from nn import Neural_Net
+import numpy as np
 
 
 class BasePlayer(object):
@@ -37,3 +39,29 @@ class HumanPlayer(BasePlayer):
                 out_str += '{}|'.format(state[x][y])
             print(out_str)
         print()
+
+
+class NNPlayer(BasePlayer):
+    def __init__(self, net_shape = (9, 18, 9, 9)):
+        super().__init__()
+        self.brain = Neural_Net(net_shape)
+
+    def play(self, state, *args, **kwargs):
+        state = np.array(state)
+        tensor = state.reshape((9,1))
+        guess_tensor = self.brain.feed_forward(tensor)
+        guess = guess_tensor.reshape((3, 3))
+
+        max = -np.inf
+        for x in (0, 1, 2):
+            for y in (0, 1, 2):
+                if guess[x,y] > max:
+                    max = guess[x,y]
+                    max_x = x
+                    max_y = y
+        return max_x, max_y
+
+
+if __name__ == '__main__':
+    bot = NNPlayer()
+    print(bot.play(((1,2,3), (4,5,6),(7,8,9))))
