@@ -1,55 +1,39 @@
-from board import Board, IllegalMoveError, GameOverError
-class IllegalPlayerNumber(Exception):
-    pass
+import re
+
 
 class BasePlayer(object):
-    def __init__(self, player_number):
-        if player_number not in (1, 2):
-            raise IllegalPlayerNumber
-        self.player_number = player_number
+    def __init__(self):
+        pass
         
-    def take_turn(board):
+    def take_turn(self, state):
         pass
         
         
 class HumanPlayer(BasePlayer):
-    def take_turn(self, board):
-        print('Player {}\'s turn'.format(self.player_number))
-        board.display()
-        print()
+    def __init__(self):
+        super().__init__()
+        self.move_checker = re.compile('[0-2],[0-2]')
+
+    def play(self, state, player_number):
+        print('Player {}\'s turn'.format(player_number))
+        self.display(state)
         while True:
+            print()
             move = input('Where woud you like to go? [x,y] >>> ')
-            move = move.replace(" ", "").replace('[', '').replace(']', '')
-            try:
-                x, y = move.split(',')
-                pos = int(x), int(y)
-                result = board.play(pos, self.player_number)
-                break
-            except ValueError:
-                print('Please enter two numbers seperated by a comma')
-            except IllegalMoveError:
-                print('That move is not legal')
-            except GameOverError:
-                print('The game is over')
-                break
-        print('\n\n')
-        if result:
-            print('Player {} Wins!!'.format(self.player_number))
-            board.display()
-            return True
-        return False
+            match = self.move_checker.search(move)
+            if match:
+                pos_str = match.group(0)
+                pos = pos_str.split(',')
 
-if __name__ == '__main__':
-    current_player = HumanPlayer(1)
-    next_player = HumanPlayer(2)
-    board = Board()
-    while True:
-        if current_player.take_turn(board):
-            break
-        else:
-            current_player, next_player = next_player, current_player
-        
+                return [int(i) for i in pos]
+            else:
+                print(f'"{move}" is not a valid move, please enter two numbers (0 - 2) separated by a coma')
 
-        
-        
-        
+    @staticmethod
+    def display(state):
+        for y in range(3):
+            out_str = '|'
+            for x in range(3):
+                out_str += '{}|'.format(state[x][y])
+            print(out_str)
+        print()
