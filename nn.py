@@ -18,7 +18,6 @@ class Neural_Net(object):
         self.cost = mse
         self.cost_derivative = mse_derivative
 
-
     def feed_forward(self, X):
         a = np.reshape(X, [len(X),-1])
         
@@ -100,7 +99,24 @@ class Neural_Net(object):
         network["layers"] = layers 
 
         return json.dumps(network)
-        
+
+    def copy(self):
+        new_nn = Neural_Net(self.layers)
+        new_nn.weights = self.weights[::]
+        new_nn.biases = self.biases[::]
+        return new_nn
+
+    def applyFunc(self, func, *args, **kwargs):
+
+        self.weights = [func(layer, *args, **kwargs) for layer in self.weights]
+        self.biases = [func(layer, *args, **kwargs) for layer in self.biases]
+
+    def mutate(self, rate):
+        def mutateFunc(layer):
+            return np.array([val + (np.random.normal() * (np.random.rand() < rate)) for val in layer])
+
+        self.applyFunc(mutateFunc)
+
 
 # Activation functions
 def sigmoid(x):
