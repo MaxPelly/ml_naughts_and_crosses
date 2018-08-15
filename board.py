@@ -78,7 +78,7 @@ class Board (object):
         self.player_one.results(self.winner, 1)
         self.player_two.results(self.winner, 2)
 
-        return next_player, current_player, self.won  # returned for neural net training
+        return next_player, current_player, not self.won  # returned for neural net training
 
     def _check_move_legality(self, pos):
         """
@@ -116,3 +116,11 @@ class Board (object):
                     player == self.get((0, 0)) and player == self.get((1, 1)) and player == self.get((2, 2))) or \
                    (x + y == 2 and
                     player == self.get((0, 2)) and player == self.get((1, 1)) and player == self.get((2, 0)))
+
+if __name__ == '__main__':
+    from player import HumanPlayer, NNPlayer
+    one = HumanPlayer()
+    two = NNPlayer()
+
+    b = Board(one, two)
+    b.play()

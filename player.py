@@ -121,7 +121,7 @@ class NNPlayer(BasePlayer):
     and related functions to allow for training
     """
 
-    def __init__(self, net_shape=(9, 18, 9, 9)):
+    def __init__(self, net_shape=(9, 18, 9, 1)):
         """
         makes a new neural net player
         :param net_shape: the shape of the players neural net
@@ -129,8 +129,37 @@ class NNPlayer(BasePlayer):
         """
 
         super().__init__()
-        self.brain = Neural_Net(net_shape)  # type: Neural_Net
+        self.brain = Neural_Net(net_shape)
         self.elo = 1000
+
+    def __lt__(self, other):
+        """
+        allows sorting on elo for training purposes
+        :param other: the other bot
+        :type other: NNPlayer
+        :return: if this not has lower elo than other
+        :rtype: bool
+        """
+        return self.elo < other.elo
+
+    def __str__(self):
+        """
+        prints elo for bebugging purposes
+        :return: elo
+        :rtype: str
+        """
+
+        return str(self.elo)
+
+    def __repr__(self):
+        """
+        prints elo for debugging purposes
+
+        :return: elo
+        :rtype: str
+        """
+
+        return str(self.elo)
 
     def play(self, state, player_number):
         """
@@ -142,22 +171,24 @@ class NNPlayer(BasePlayer):
         :return: an (x,y) coordinate of the players move
         :rtype: int[2]
         """
-
-        # todo make player number agnostic
-
         state = np.array(state)
         tensor = state.reshape((9, 1))
-        guess_tensor = self.brain.feed_forward(tensor)
-        guess = guess_tensor.reshape((3, 3))
+        moves, positions, rankings = [], [], []
+        for i in range(len(tensor)):
+            if tensor[i] == player_number:
+                tensor[i] = 1
+            elif tensor[i] == 0:
+                move = tensor[:]
+                move[i] = 1
+                moves.append(move)
+                positions.append((i // 3, i % 3))
+                rankings.append(self.brain.feed_forward(move)[0][0])
+                pass
+            else:
+                tensor[i] = -1
 
-        max_output, max_x, max_y = -np.inf, 0, 0
-        for x in (0, 1, 2):
-            for y in (0, 1, 2):
-                if guess[x, y] > max_output:
-                    max_output = guess[x, y]
-                    max_x = x
-                    max_y = y
-        return max_x, max_y
+        best = rankings.index(max(rankings))
+        return positions[best]
 
     def mutate(self, rate):
         """
@@ -165,11 +196,16 @@ class NNPlayer(BasePlayer):
         :param rate: probability of mutation
         :type rate: int
         """
-        
+
         self.brain.mutate(rate)
 
+    def copy(self):
+        new_bot = NNPlayer()
+        new_bot.brain = self.brain.copy()
+        return new_bot
+
     @staticmethod
-    def update_fitness(winner, loser, tie=False, k=32):
+    def update_elo(winner, loser, tie=False, k=32):
         """
         Updates the fitness of two neural net players after a game
         :param winner: the winning player
@@ -191,7 +227,6 @@ class NNPlayer(BasePlayer):
         winner.elo += k * ((1 - (0.5 * tie)) - expected_winner)
         loser.elo += k * ((0.5 * tie) - expected_loser)
 
-
-if __name__ == '__main__':
-    bot = NNPlayer()
-    print(bot.play(((1,2,3), (4,5,6),(7,8,9))))
+    def save(self, filename="brain.json"):
+        with open(filename, "w") as out_file:
+            out_file.write(self.brain.export())
