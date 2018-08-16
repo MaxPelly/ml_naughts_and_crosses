@@ -77,6 +77,7 @@ def train(population_size, fraction_kept, generations, sub_generations, mutation
 
         for thread in range(threads):
             thread = Thread(target=trainer_thread, args=(player_queue, thread, quit_event))
+            thread.setDaemon(True)
             thread.start()
 
         for generation in range(generations):
