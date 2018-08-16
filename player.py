@@ -1,6 +1,8 @@
 import re
-from nn import Neural_Net
+
 import numpy as np
+
+from nn import Neural_Net
 
 
 class BasePlayer(object):
@@ -178,23 +180,25 @@ class NNPlayer(BasePlayer):
             if tensor[i] == player_number:
                 tensor[i] = 1
             elif tensor[i] == 0:
-                move = tensor[:]
-                move[i] = 1
-                moves.append(move)
-                positions.append((i // 3, i % 3))
-                rankings.append(self.brain.feed_forward(move)[0][0])
+                positions.append((i, i // 3, i % 3))
                 pass
             else:
                 tensor[i] = -1
 
+        for pos in positions:
+            move = tensor[:]
+            move[pos[0]] = 1
+            moves.append(move)
+            rankings.append(self.brain.feed_forward(move)[0][0])
+
         best = rankings.index(max(rankings))
-        return positions[best]
+        return positions[best][1:]
 
     def mutate(self, rate):
         """
         mutates neural net inplace
         :param rate: probability of mutation
-        :type rate: int
+        :type rate: float
         """
 
         self.brain.mutate(rate)
@@ -230,3 +234,8 @@ class NNPlayer(BasePlayer):
     def save(self, filename="brain.json"):
         with open(filename, "w") as out_file:
             out_file.write(self.brain.export())
+
+
+if __name__ == '__main__':
+    p = NNPlayer()
+    p.play(((1, 0, 0), (0, 0, 0), (0, 0, 0)), 1)
