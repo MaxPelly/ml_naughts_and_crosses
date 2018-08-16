@@ -17,14 +17,15 @@ def trainer_thread(queue, thread_id, quit_event):
     :param quit_event: an event to tell the thread when to quit
     :type quit_event: Event
     """
-    print(f"Thread {thread_id} started")
+    # print(f"Thread {thread_id} started")
     while not quit_event.is_set():
         while queue.qsize() > 1:
             player_one = queue.get()
             player_two = queue.get()
             board = Board(player_one, player_two)
             NNPlayer.update_elo(*board.play())
-    print(f"Thread {thread_id} quitting")
+    # print(f"Thread {thread_id} quitting")
+    return
 
 
 def run_generation(players, sub_generations, player_queue):
