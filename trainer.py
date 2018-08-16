@@ -89,7 +89,6 @@ def train(population_size, fraction_kept, generations, sub_generations, mutation
                 players.append(new_player)
     finally:
         quit_event.set()
-        players = [NNPlayer() for _ in range(population_size)]
         return players[0]
 
 
