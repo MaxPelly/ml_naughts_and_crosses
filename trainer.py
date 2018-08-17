@@ -100,25 +100,32 @@ def train(population_size, fraction_kept, generations, sub_generations, mutation
             players = run_generation(players=players, sub_generations=sub_generations, player_queue=player_queue)
             players.sort(reverse=True)
             players = players[:int(len(players) * fraction_kept)]
+            i = 0
             while len(players) < population_size:
-                new_player = choice(players).copy()  # type: NNPlayer
-                new_player.mutate(mutation_rate)
+                if i % 2 == 0:
+                    new_player = choice(players).copy()  # type: NNPlayer
+                    new_player.mutate(mutation_rate)
+                else:
+                    new_player = NNPlayer()
+
                 players.append(new_player)
     finally:
         quit_event.set()
         for thread in live_threads:
             thread.join()
-        return players[0]
+        return players
 
 
 if __name__ == '__main__':
     from player import HumanPlayer
 
-    best = train(population_size=100, fraction_kept=0.2, generations=10, sub_generations=2, mutation_rate=0.2,
-                 threads=10)
+    trained = train(population_size=100, fraction_kept=0.2, generations=100, sub_generations=2, mutation_rate=0.5,
+                    threads=10)
+    best = trained[0]
+    next_best = trained[1]
     print("\n\nTraining Complete\n\n")
     print(f"best elo is {best.elo}\n\n")
     best.save()
     human = HumanPlayer()
-    board = Board(human, best)
-    board.play()
+    board = Board(best, human)
+    print(board.play())
