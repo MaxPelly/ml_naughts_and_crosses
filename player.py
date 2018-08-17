@@ -232,8 +232,31 @@ class NNPlayer(BasePlayer):
         loser.elo += k * ((0.5 * tie) - expected_loser)
 
     def save(self, filename="brain.json"):
+        """
+        saves the bots neural network, but not elo, in a json file
+        :param filename: the name of the file to save int
+        :type filename: str
+        """
+
         with open(filename, "w") as out_file:
             out_file.write(self.brain.export())
+
+    @classmethod
+    def load(cls, filename):
+        """
+        loads a bot from a save file
+        :param filename: the name of the save file
+        :type filename: str
+        :return: the bot
+        :rtype: NNPlayer
+        """
+
+        with open(filename, "r") as file:
+            data = file.read()
+        brain = Neural_Net.load(data)
+        bot = NNPlayer()
+        bot.brain = brain
+        return bot
 
 
 if __name__ == '__main__':

@@ -1,5 +1,12 @@
-import numpy as np
+"""
+Not mine, copied from:
+    https://github.com/12yuens2/neural-net-tic-tac-toe/blob/master/neuralnet.py
+"""
+
 import json
+
+import numpy as np
+
 
 class Neural_Net(object):
     
@@ -99,6 +106,24 @@ class Neural_Net(object):
         network["layers"] = layers 
 
         return json.dumps(network)
+
+    @classmethod
+    def load(cls, settings):
+        if type(settings) == str:
+            settings = json.loads(settings)
+        size = settings["nr_layers"]
+        layers = []
+        layers.append(settings["nr_inputs"])
+
+        for layer in settings["layers"]:
+            layers.append(layer["nr_nodes"])
+
+        net = Neural_Net(layers)
+
+        for l in range(size - 1):
+            net.weights[l] = np.array(settings["layers"][l]["input_weights"])
+            net.biases[l] = np.array(settings["layers"][l]["input_biases"])
+        return net
 
     def copy(self):
         new_nn = Neural_Net(self.layers)

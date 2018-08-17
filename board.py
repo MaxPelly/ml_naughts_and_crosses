@@ -15,7 +15,9 @@ class Board (object):
         """
         creates a new board
         :param player_one: the first player, an object implementing a play function
+        :type player_one: BasePlayer
         :param player_two: the first player, an object implementing a play function
+        :type player_two: BasePlayer
         """
 
         self.state = [[0 for _ in range(3)] for _ in range(3)]
@@ -28,7 +30,9 @@ class Board (object):
         """
         gets the state of the bored at pos (x,y)
         :param pos: the x,y coordinates of the piece to get
+        :type pos: int[2]
         :return: the state of the board. (0: un owned, 1, owned by player 1, 2: owned by player 2)
+        :rtype: int
         """
 
         return self.state[pos[0]][pos[1]]
@@ -37,8 +41,9 @@ class Board (object):
         """
         sets the state of the board at pos (x,y) to val, no error checking, assumes move is valid
         :param pos: the (x,y) coordinates of the position to set
+        :type pos: int[2]
         :param val: the value to set the board to. (0: un owned, 1, owned by player 1, 2: owned by player 2)
-        :return: None
+        :type val: int
         """
 
         self.state[pos[0]][pos[1]] = val
@@ -48,7 +53,6 @@ class Board (object):
         the main loop, plays a game by asking each player in turn for their move (passing them the bord state) and then
         checking the win condition
         performs move validity checking though if an invalid move is detected the player is simply skipped
-        :return:
         """
 
         current_player, next_player = self.player_one, self.player_two
@@ -87,8 +91,10 @@ class Board (object):
             the move is a tuple or list
             the space exists on the board
             the proposed position is not already claimed
-        :param pos:
+        :param pos: the position of the proposed move
+        :type pos: int[2]
         :return: True if the move is legal, otherwise false
+        :rtype: bool
         """
 
         if type(pos) not in (tuple, list) or\
@@ -100,10 +106,9 @@ class Board (object):
     def _test_for_win(self, pos, player):
         """
         Checks for a win following a move at pos (x,y) and sets self.won accordingly
-        assumes noone has previously won
-        currently dosent check diagonals
-        :param pos:
-        :return: None
+        assumes no one has previously won
+        :param pos: the position of the last move
+        :type pos: int[2]
         """
 
         x, y = pos
@@ -116,6 +121,7 @@ class Board (object):
                     player == self.get((0, 0)) and player == self.get((1, 1)) and player == self.get((2, 2))) or \
                    (x + y == 2 and
                     player == self.get((0, 2)) and player == self.get((1, 1)) and player == self.get((2, 0)))
+
 
 if __name__ == '__main__':
     from player import HumanPlayer, NNPlayer
